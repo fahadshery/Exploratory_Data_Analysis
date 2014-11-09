@@ -1,0 +1,90 @@
+---
+title: "Project1_EXP_DATA_ANALYSIS"
+author: "Fahad Usman"
+date: "Sunday, November 09, 2014"
+output: html_document
+---
+
+
+```{r download and read in the data}
+
+# file Url where data is located
+fileUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+
+# Download zip file
+download.file(fileUrl, destfile="household_power_consumption.zip")
+
+# Read data set after unzipping the data file
+globalPowerConsumption <- read.table(unz("household_power_consumption.zip", "household_power_consumption.txt"), header=T, sep=";", nrows = 2075260, quote= "", stringsAsFactors = FALSE, strip.white = TRUE, na.strings = "?")
+
+#check the data
+str(globalPowerConsumption)
+
+#subset data according to the specified dates Feb 1 and 2 2007 only:
+globalPowerSub <- subset(globalPowerConsumption, globalPowerConsumption$Date %in% c("1/2/2007", "2/2/2007"))
+
+#check the data
+str(globalPowerSub)
+globalPowerSub$Date
+
+# Paste Date and Time variables together
+globalPowerSub$dateTime = paste(globalPowerSub$Date, globalPowerSub$Time)
+
+#check dateTime
+globalPowerSub$dateTime
+
+#convert to date and time format
+library(lubridate)
+
+globalPowerSub$dateTime = dmy_hms(globalPowerSub$dateTime, tz = "GMT")
+
+```
+
+```{r Plots}
+#attaching the dataframe so that I dont have to write it again and again!
+attach(globalPowerSub)
+
+#PLOT 1
+
+png("plot1.png", width=480, height=480, units="px")
+# Plot the distribution of global active power
+hist(Global_active_power, col="red", main="Global Active Power", xlab="Global Active Power (kilowatts)")
+dev.off()
+
+#PLOT 2
+class(Global_active_power)
+
+png("plot2.png", width=480, height=480, units="px")
+plot(dateTime, Global_active_power, type = "l", xlab = "", ylab = "Global Active Power (kilowatts)")
+dev.off()
+
+#PLOT 3
+
+png("plot3.png", width=480, height=480, units="px")
+plot(dateTime, Sub_metering_1, type = "l", xlab = "", ylab = "Energy sub metering")
+lines(dateTime, Sub_metering_2, col="red")
+lines(dateTime, Sub_metering_3, col="blue")
+legend("topright", lty=1, col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3" ))
+dev.off()
+
+#PLOT 4
+
+#setup png to print to:
+png("plot4.png", width=480, height=480, units="px")
+
+#set the canvance i.e. we want two rows and 2 columns of plots
+par(mfrow=c(2,2))
+
+plot(dateTime, Global_active_power, type="l", xlab="", ylab="Global Active Power")
+
+plot(dateTime, Voltage, type="l", xlab="datetime", ylab="Voltage")
+
+plot(dateTime, Sub_metering_1, type="l", xlab="", ylab="Energy sub metering")
+lines(dateTime, Sub_metering_2, col="red")
+lines(dateTime, Sub_metering_3, col="blue")
+legend("topright", lty=1, bty="n", col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3" ))
+
+plot(dateTime, Global_reactive_power, type = "l", xlab = "datetime", ylab = "Global_reactive_power")
+
+dev.off()
+```
